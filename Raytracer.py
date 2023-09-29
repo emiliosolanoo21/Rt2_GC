@@ -20,37 +20,36 @@ raytracer = Raytracer(screen)
 raytracer.envMap = pygame.image.load("images/night.jpg")
 raytracer.rtClearColor(0.25,0.25,0.25)
 
+#Carga de texturas
 flowTexture = pygame.image.load("images/flow.jpg")
+CLTexture = pygame.image.load("images/Champions.jpg")
+JabulaniTexture = pygame.image.load("images/Jabulani.jpg")
+discoTexture = pygame.image.load("images/discoBall.jpg")
+TGTexture = pygame.image.load("images/Teamgeist.jpg")
 
-brick = Material(diffuse=(1,0.4,0.4), spec = 8,  ks = 0.01)
-grass = Material(diffuse=(0.4,1,0.4), spec = 32,  ks = 0.1)
-water = Material(diffuse=(0.4,0.4,1), spec = 256, ks = 0.2)
+#Carga de materiales
+Jabulani = Material(texture = JabulaniTexture, spec = 20, ks = 0.01)
+Teamgeist = Material(texture = TGTexture, spec = 5,  ks = 0.5)
 
-mirror = Material(diffuse=(0.9,0.9,0.9), spec = 64, ks = 0.2, matType = REFLECTIVE)
-blueMirror = Material(diffuse=(0.4,0.4,0.9), spec = 32, ks = 0.15, matType = REFLECTIVE)
-colorFlow = Material(texture = flowTexture)
 reflectFlow = Material(texture = flowTexture, spec = 64, ks = 0.1, matType= REFLECTIVE)
+discoBall = Material(texture = discoTexture, spec = 200, ks = 0.45, matType= REFLECTIVE)
 
-glass = Material(diffuse=(0.9,0.9,0.9), spec = 64, ks = 0.15, ior = 1.5, matType = TRANSPARENT)
-diamond = Material(diffuse=(0.9,0.9,0.9), spec = 128, ks = 0.2, ior = 2.417, matType = TRANSPARENT)
-water = Material(diffuse=(0.4,0.4,1.0), spec = 128, ks = 0.2, ior = 1.33, matType = TRANSPARENT)
+CLBall = Material(texture = CLTexture, spec = 64, ks = 0.15, ior = 4.5, matType = TRANSPARENT)
+Heineken = Material(diffuse=(0,0.478,0.082), spec = 100, ks = 0.05, ior = 1.5, matType = TRANSPARENT)
 
-""" raytracer.scene.append(Sphere(position=(1,1,-5), radius = 0.5, material = grass))
-raytracer.scene.append(Sphere(position=(0.5,-1,-5), radius = 0.3, material = water)) """
+#Posicionamiento de esferas
+raytracer.scene.append(Sphere(position=(-1.5,0.75,-5), radius = 0.5, material = Jabulani))
+raytracer.scene.append(Sphere(position=(-1.5,-0.75,-5), radius = 0.5, material = Teamgeist))
 
-""" raytracer.scene.append(Sphere(position=(-2,0,-7), radius = 1.5, material = reflectFlow))
-raytracer.scene.append(Sphere(position=(2,0,-7), radius = 2, material = colorFlow))
-raytracer.scene.append(Sphere(position=(0,-1,-5), radius = 0.5, material = mirror)) """
+raytracer.scene.append(Sphere(position=(0,0.75,-5), radius = 0.5, material = reflectFlow))
+raytracer.scene.append(Sphere(position=(0,-0.75,-5), radius = 0.5, material = discoBall))
 
-raytracer.scene.append(Sphere(position=(-1,0,-5), radius = 1, material = glass))
-raytracer.scene.append(Sphere(position=(1,0,-5), radius = 0.7, material = diamond))
-raytracer.scene.append(Sphere(position=(0,1,-8), radius = 1, material = brick))
-
-""" raytracer.scene.append(Sphere(position=(0,0,-5), radius = 1.5, material = water)) """
+raytracer.scene.append(Sphere(position=(1.5,0.75,-5), radius = 0.5, material = CLBall))
+raytracer.scene.append(Sphere(position=(1.5,-0.75,-5), radius = 0.5, material = Heineken))
 
 #iluminacion minima del ambiente
-raytracer.lights.append(AmbientLight(intensity=0.1))
-raytracer.lights.append(DirectionalLight(direction=(-1,-1,-1), intensity=0.9))
+raytracer.lights.append(AmbientLight(intensity=0.15))
+raytracer.lights.append(DirectionalLight(direction=(-2,-3,-1), intensity=0.75))
 #raytracer.lights.append(PointLight(point=(1.5,0,-5), intensity=1, color= (1,0,1)))
 
 raytracer.rtClear()
@@ -66,5 +65,9 @@ while isRunning:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 isRunning=False
+
+rect = pygame.Rect(0,0,width,height)
+sub = screen.subsurface(rect)
+pygame.image.save(sub, "Rt2.jpg")
                 
 pygame.quit()           
