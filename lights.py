@@ -1,35 +1,29 @@
-import numpy as np
+import mathLib as ml
 from math import acos, asin
-
-#Agregar en libreria matematica
-def reflectVector(normal, direction):
-    reflect = 2*np.dot(normal, direction)
-    reflect = np.multiply(reflect, normal)
-    reflect = np.subtract(reflect, direction)
-    reflect = reflect / np.linalg.norm(reflect)
-    
-    return reflect
 
 def refractVector(normal, incident, n1, n2):
     #Snell's Law
-    c1 = np.dot(normal, incident)
+    c1 = ml.dotProd(normal, incident)
     
     if c1 < 0:
         c1 = -c1
     else: 
-        normal = np.array(normal)*-1
+        normal = [i*-1 for i in normal]
         n1, n2 = n2, n1
     
     n = n1/n2
     
-    t = n*(incident + c1 * normal) - normal *(1-n**2*(1-c1**2))**0.5
+    temp1 = ml.VxE(ml.addV(incident,ml.VxE(normal,c1)), n)
+    temp2 = ml.VxE(normal, (1-n**2*(1-c1**2))**0.5)
     
-    t = t/np.linalg.norm(t)
+    t = ml.substractV(temp1, temp2)
+    
+    t = ml.normalizeV(t)
     
     return t
 
 def totalInternalReflection(normal, incident, n1, n2):
-    c1 = np.dot(normal, incident)
+    c1 = ml.dotProd(normal, incident)
     
     if c1 < 0:
         c1 = -c1
@@ -45,7 +39,7 @@ def totalInternalReflection(normal, incident, n1, n2):
     return theta1 >= thetaC
 
 def fresnel(normal, incident, n1, n2):
-    c1 = np.dot(normal, incident)
+    c1 = ml.dotProd(normal, incident)
     
     if c1 < 0:
         c1 = -c1
@@ -87,14 +81,14 @@ class AmbientLight(Light):
 
 class DirectionalLight(Light):
     def __init__(self, direction = (0,-1,0), intensity = 1, color = (1,1,1)):
-        self.direction = direction / np.linalg.norm(direction)
+        self.direction = ml.normalizeV(direction)
         super().__init__(intensity,color,"Directional")
     
     def getDiffuseColor(self, intercept):
         
         dir =[(i*-1) for i in self.direction]
         
-        intensity = np.dot(intercept.normal, dir) * self.intensity
+        intensity = ml.dotProd(intercept.normal, dir) * self.intensity
         intensity = max(0, min(1, intensity))
         intensity *= 1 - intercept.obj.material.ks
         
@@ -104,13 +98,13 @@ class DirectionalLight(Light):
     
     def getSpecularColor(self, intercept, viewPos):
         dir =[(i*-1) for i in self.direction]
-        reflect = reflectVector(intercept.normal, dir)
+        reflect = ml.reflectVector(intercept.normal, dir)
         
-        viewDir = np.subtract(viewPos,intercept.point)
-        viewDir = viewDir/np.linalg.norm(viewDir)
+        viewDir = ml.substractV(viewPos,intercept.point)
+        viewDir = ml.normalizeV(viewDir)
         
         #Cambia dependiendo de la superficie
-        specIntensity = max(0, np.dot(viewDir, reflect))** intercept.obj.material.spec
+        specIntensity = max(0, ml.dotProd(viewDir, reflect))** intercept.obj.material.spec
         specIntensity *= intercept.obj.material.ks
         specIntensity *= self.intensity
         
@@ -124,11 +118,11 @@ class PointLight(Light):
         super().__init__(intensity, color, "Point")
         
     def getDiffuseColor(self, intercept):
-        dir = np.subtract(self.point, intercept.point)
-        R = np.linalg.norm(dir)
+        dir = ml.substractV(self.point, intercept.point)
+        R = ml.normalizeV(dir)
         dir = dir/R
         
-        intensity = np.dot(intercept.normal, dir) * self.intensity
+        intensity = ml.dotProd(intercept.normal, dir) * self.intensity
         intensity *= 1 - intercept.obj.material.ks
         
         #Ley de cuadrados inversos
@@ -145,17 +139,17 @@ class PointLight(Light):
         return diffuseColor
     
     def getSpecularColor(self, intercept, viewPos):
-        dir = np.subtract(self.point, intercept.point)
-        R = np.linalg.norm(dir)
-        dir = dir/R
+        dir = ml.substractV(self.point, intercept.point)
+        R = ml.magV(dir)
+        dir = ml.normalizeV(dir)
         
-        reflect = reflectVector(intercept.normal, dir)
+        reflect = ml.reflectVector(intercept.normal, dir)
         
-        viewDir = np.subtract(viewPos,intercept.point)
-        viewDir = viewDir/np.linalg.norm(viewDir)
+        viewDir = ml.substractV(viewPos,intercept.point)
+        viewDir = ml.normalizeV(viewDir)
         
         #Cambia dependiendo de la superficie
-        specIntensity = max(0, np.dot(viewDir, reflect))** intercept.obj.material.spec
+        specIntensity = max(0, ml.dotProd(viewDir, reflect))** intercept.obj.material.spec
         specIntensity *= intercept.obj.material.ks
         specIntensity *= self.intensity
         
